@@ -1,0 +1,23 @@
+{
+  "name": "beeminder-js",
+  "version": "1.0.0",
+  "description": "Very thin wrapper around Beeminder API",
+  "main": "beeminder.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/czr/beeminder-js.git"
+  },
+  "author": "Colin Z. Robertson",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/czr/beeminder-js/issues"
+  },
+  "homepage": "https://github.com/czr/beeminder-js#readme",
+  "dependencies": {
+    "axios": "^0.18.0",
+    "qs": "^6.6.0"
+  }
+}
