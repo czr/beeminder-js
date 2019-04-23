@@ -3,14 +3,39 @@
 const axios = require('axios')
 const qs = require('qs')
 
+function AuthError(message, cause) {
+  this.name = 'AuthError'
+  this.message = message
+  this.cause = cause
+
+  return this
+}
+
 function goal(user, authToken, goal) {
   const apiBase = 'https://www.beeminder.com/api/v1'
 
   return {
     datapoints: async () => {
-      let url = `${apiBase}/users/${user}/goals/${goal}/datapoints.json?auth_token=${authToken}`
-      let response = await axios.get(url)
-      return response.data
+      let baseUrl = `${apiBase}/users/${user}/goals/${goal}/datapoints.json`
+      let authUrl = `${baseUrl}?auth_token=${authToken}`
+
+      try {
+        let response = await axios.get(authUrl)
+        return response.data
+      }
+      catch (err) {
+        if (err.response && err.response.status === 401) {
+          throw new AuthError(
+            `Not authorised for: ${baseUrl}: ${err.response.data.errors}`,
+            err,
+          )
+        }
+        else {
+          const wrapper = new Error(`Failed to fetch datapoints: ${baseUrl}: ${err.message}`)
+          wrapper.cause = err
+          throw wrapper
+        }
+      }
     },
 
     createDatapoint: async (datapoint) => {
