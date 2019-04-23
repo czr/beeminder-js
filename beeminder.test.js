@@ -93,32 +93,93 @@ describe("beeminder goal", () => {
     })
   })
 
-  it("creates datapoints", async () => {
-    var expectedId = 1234
-    mockAxios.post.mockImplementationOnce(() =>
-      Promise.resolve({
-        data: { id: expectedId },
-      })
-    )
+  describe('createDatapoint()', () => {
+    it("creates datapoints", async () => {
+      var expectedId = 1234
+      mockAxios.post.mockImplementationOnce(() =>
+        Promise.resolve({
+          data: { id: expectedId },
+        })
+      )
 
-    var goal = beeminder.goal(
-      'test-user',
-      'XXXXXXXX',
-      'test-goal'
-    )
-    var datapoint = {
-      "daystamp": "20090213",
-      "value": 5,
-      "comment": "Test datapoint",
-    }
-    var gotId = await goal.createDatapoint()
+      var goal = beeminder.goal(
+        'test-user',
+        'XXXXXXXX',
+        'test-goal'
+      )
+      var datapoint = {
+        "daystamp": "20090213",
+        "value": 5,
+        "comment": "Test datapoint",
+      }
+      var gotId = await goal.createDatapoint()
 
-    expect(gotId).toEqual(expectedId)
-    expect(mockAxios.post).toHaveBeenCalledTimes(1)
-    expect(mockAxios.post).toHaveBeenCalledWith(
-      "https://www.beeminder.com/api/v1/users/test-user/goals/test-goal/datapoints.json",
-      expect.any(String),
-      { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } },
-    )
+      expect(gotId).toEqual(expectedId)
+      expect(mockAxios.post).toHaveBeenCalledTimes(1)
+      expect(mockAxios.post).toHaveBeenCalledWith(
+        "https://www.beeminder.com/api/v1/users/test-user/goals/test-goal/datapoints.json",
+        expect.any(String),
+        { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } },
+      )
+    })
+
+    it("handles authentication error", async () => {
+      mockAxios.post.mockImplementationOnce(() =>
+        Promise.reject({
+          response: {
+            status: 401,
+            data: { errors: "Not authorised" },
+          },
+        })
+      )
+
+      var goal = beeminder.goal(
+        'test-user',
+        'XXXXXXXX',
+        'test-goal'
+      )
+      var datapoint = {
+        "daystamp": "20090213",
+        "value": 5,
+        "comment": "Test datapoint",
+      }
+
+      expect.assertions(3);
+      try {
+        var gotId = await goal.createDatapoint()
+      }
+      catch(err) {
+        expect(err.name).toEqual('AuthError')
+        expect(err.message).toEqual('Not authorised for: https://www.beeminder.com/api/v1/users/test-user/goals/test-goal/datapoints.json: Not authorised')
+        expect(err.cause.response.status).toEqual(401)
+      }
+    })
+
+    it("doesn't swallow unknown errors", async () => {
+      mockAxios.post.mockImplementationOnce(() =>
+        Promise.reject(Error('Something went wrong'))
+      )
+
+      var goal = beeminder.goal(
+        'test-user',
+        'XXXXXXXX',
+        'test-goal'
+      )
+      var datapoint = {
+        "daystamp": "20090213",
+        "value": 5,
+        "comment": "Test datapoint",
+      }
+
+      expect.assertions(2);
+      try {
+        var gotId = await goal.createDatapoint()
+      }
+      catch(err) {
+        expect(err.name).toEqual('Error')
+        expect(err.message).toEqual('Failed to create datapoint on: https://www.beeminder.com/api/v1/users/test-user/goals/test-goal/datapoints.json: Something went wrong')
+      }
+    })
+
   })
 })

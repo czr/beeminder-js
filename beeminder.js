@@ -40,12 +40,28 @@ function goal(user, authToken, goal) {
 
     createDatapoint: async (datapoint) => {
       let url = `${apiBase}/users/${user}/goals/${goal}/datapoints.json`
-      let response = await axios.post(
-        url,
-        qs.stringify({ ...datapoint, auth_token: authToken }),
-        { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } },
-      )
-      return response.data.id
+
+      try {
+        let response = await axios.post(
+          url,
+          qs.stringify({ ...datapoint, auth_token: authToken }),
+          { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } },
+        )
+        return response.data.id
+      }
+      catch (err) {
+        if (err.response && err.response.status === 401) {
+          throw new AuthError(
+            `Not authorised for: ${url}: ${err.response.data.errors}`,
+            err,
+          )
+        }
+        else {
+          const wrapper = new Error(`Failed to create datapoint on: ${url}: ${err.message}`)
+          wrapper.cause = err
+          throw wrapper
+        }
+      }
     },
 
     updateDatapoint: async (datapoint) => {
