@@ -4,6 +4,12 @@ const mockAxios = require("axios")
 const beeminder = require("./beeminder")
 
 describe("beeminder goal", () => {
+  var goal = beeminder.goal(
+    'test-user',
+    'XXXXXXXX',
+    'test-goal'
+  )
+
   describe('datapoints()', () => {
     it("fetches datapoints", async () => {
       var expectedDatapoints = [
@@ -32,11 +38,6 @@ describe("beeminder goal", () => {
         })
       )
 
-      var goal = beeminder.goal(
-        'test-user',
-        'XXXXXXXX',
-        'test-goal'
-      )
       var datapoints = await goal.datapoints()
 
       expect(datapoints).toEqual(expectedDatapoints)
@@ -56,11 +57,6 @@ describe("beeminder goal", () => {
         })
       )
 
-      var goal = beeminder.goal(
-        'test-user',
-        'XXXXXXXX',
-        'test-goal'
-      )
       expect.assertions(3);
       try {
         var datapoints = await goal.datapoints()
@@ -77,11 +73,6 @@ describe("beeminder goal", () => {
         Promise.reject(Error('Something went wrong'))
       )
 
-      var goal = beeminder.goal(
-        'test-user',
-        'XXXXXXXX',
-        'test-goal'
-      )
       expect.assertions(2);
       try {
         var datapoints = await goal.datapoints()
@@ -102,11 +93,6 @@ describe("beeminder goal", () => {
         })
       )
 
-      var goal = beeminder.goal(
-        'test-user',
-        'XXXXXXXX',
-        'test-goal'
-      )
       var datapoint = {
         "daystamp": "20090213",
         "value": 5,
@@ -133,11 +119,6 @@ describe("beeminder goal", () => {
         })
       )
 
-      var goal = beeminder.goal(
-        'test-user',
-        'XXXXXXXX',
-        'test-goal'
-      )
       var datapoint = {
         "daystamp": "20090213",
         "value": 5,
@@ -160,11 +141,6 @@ describe("beeminder goal", () => {
         Promise.reject(Error('Something went wrong'))
       )
 
-      var goal = beeminder.goal(
-        'test-user',
-        'XXXXXXXX',
-        'test-goal'
-      )
       var datapoint = {
         "daystamp": "20090213",
         "value": 5,
@@ -180,6 +156,5 @@ describe("beeminder goal", () => {
         expect(err.message).toEqual('Failed to create datapoint on: https://www.beeminder.com/api/v1/users/test-user/goals/test-goal/datapoints.json: Something went wrong')
       }
     })
-
   })
 })
