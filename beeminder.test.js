@@ -98,7 +98,7 @@ describe("beeminder goal", () => {
         "value": 5,
         "comment": "Test datapoint",
       }
-      var gotId = await goal.createDatapoint()
+      var gotId = await goal.createDatapoint(datapoint)
 
       expect(gotId).toEqual(expectedId)
       expect(mockAxios.post).toHaveBeenCalledTimes(1)
@@ -127,7 +127,7 @@ describe("beeminder goal", () => {
 
       expect.assertions(3);
       try {
-        var gotId = await goal.createDatapoint()
+        var gotId = await goal.createDatapoint(datapoint)
       }
       catch(err) {
         expect(err.name).toEqual('AuthError')
@@ -149,11 +149,92 @@ describe("beeminder goal", () => {
 
       expect.assertions(2);
       try {
-        var gotId = await goal.createDatapoint()
+        var gotId = await goal.createDatapoint(datapoint)
       }
       catch(err) {
         expect(err.name).toEqual('Error')
         expect(err.message).toEqual('Failed to create datapoint on: https://www.beeminder.com/api/v1/users/test-user/goals/test-goal/datapoints.json: Something went wrong')
+      }
+    })
+  })
+
+  describe('updateDatapoint()', () => {
+    it("updates datapoints", async () => {
+      mockAxios.put.mockImplementationOnce(() =>
+        Promise.resolve({
+          data: {
+            "id": "1234",
+            "daystamp": "20090213",
+            "value": 5,
+            "comment": "Test datapoint",
+          },
+        })
+      )
+
+      var datapoint = {
+        "id": "1234",
+        "daystamp": "20090213",
+        "value": 5,
+        "comment": "Test datapoint",
+      }
+      var got = await goal.updateDatapoint(datapoint)
+
+      expect(got).toEqual(datapoint)
+      expect(mockAxios.put).toHaveBeenCalledTimes(1)
+      expect(mockAxios.put).toHaveBeenCalledWith(
+        "https://www.beeminder.com/api/v1/users/test-user/goals/test-goal/datapoints/1234.json",
+        expect.any(String),
+        { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } },
+      )
+    })
+
+    it("handles authentication error", async () => {
+      mockAxios.put.mockImplementationOnce(() =>
+        Promise.reject({
+          response: {
+            status: 401,
+            data: { errors: "Not authorised" },
+          },
+        })
+      )
+
+      var datapoint = {
+        "id": "1234",
+        "daystamp": "20090213",
+        "value": 5,
+        "comment": "Test datapoint",
+      }
+
+      expect.assertions(3);
+      try {
+        var got = await goal.updateDatapoint(datapoint)
+      }
+      catch(err) {
+        expect(err.name).toEqual('AuthError')
+        expect(err.message).toEqual('Not authorised for: https://www.beeminder.com/api/v1/users/test-user/goals/test-goal/datapoints/1234.json: Not authorised')
+        expect(err.cause.response.status).toEqual(401)
+      }
+    })
+
+    it("doesn't swallow unknown errors", async () => {
+      mockAxios.put.mockImplementationOnce(() =>
+        Promise.reject(Error('Something went wrong'))
+      )
+
+      var datapoint = {
+        "id": "1234",
+        "daystamp": "20090213",
+        "value": 5,
+        "comment": "Test datapoint",
+      }
+
+      expect.assertions(2);
+      try {
+        var gotId = await goal.updateDatapoint(datapoint)
+      }
+      catch(err) {
+        expect(err.name).toEqual('Error')
+        expect(err.message).toEqual('Failed to update datapoint: https://www.beeminder.com/api/v1/users/test-user/goals/test-goal/datapoints/1234.json: Something went wrong')
       }
     })
   })

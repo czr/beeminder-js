@@ -66,11 +66,28 @@ function goal(user, authToken, goal) {
 
     updateDatapoint: async (datapoint) => {
       let url = `${apiBase}/users/${user}/goals/${goal}/datapoints/${datapoint.id}.json`
-      return axios.put(
-        url,
-        qs.stringify({ ...datapoint, auth_token: authToken }),
-        { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } },
-      )
+
+      try {
+        let response = await axios.put(
+          url,
+          qs.stringify({ ...datapoint, auth_token: authToken }),
+          { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } },
+        )
+        return response.data
+      }
+      catch (err) {
+        if (err.response && err.response.status === 401) {
+          throw new AuthError(
+            `Not authorised for: ${url}: ${err.response.data.errors}`,
+            err,
+          )
+        }
+        else {
+          const wrapper = new Error(`Failed to update datapoint: ${url}: ${err.message}`)
+          wrapper.cause = err
+          throw wrapper
+        }
+      }
     },
 
     deleteDatapoint: async (id) => {
