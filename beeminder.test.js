@@ -207,7 +207,7 @@ describe("beeminder goal", () => {
 
       expect.assertions(3);
       try {
-        var got = await goal.updateDatapoint(datapoint)
+        await goal.updateDatapoint(datapoint)
       }
       catch(err) {
         expect(err.name).toEqual('AuthError')
@@ -230,11 +230,77 @@ describe("beeminder goal", () => {
 
       expect.assertions(2);
       try {
-        var gotId = await goal.updateDatapoint(datapoint)
+        await goal.updateDatapoint(datapoint)
       }
       catch(err) {
         expect(err.name).toEqual('Error')
         expect(err.message).toEqual('Failed to update datapoint: https://www.beeminder.com/api/v1/users/test-user/goals/test-goal/datapoints/1234.json: Something went wrong')
+      }
+    })
+  })
+
+  describe('deleteDatapoint()', () => {
+    it("deletes datapoints", async () => {
+      mockAxios.delete.mockImplementationOnce(() =>
+        Promise.resolve({
+          data: {
+            "id": "1234",
+            "daystamp": "20090213",
+            "value": 5,
+            "comment": "Test datapoint",
+          },
+        })
+      )
+
+      var expected = {
+        "id": "1234",
+        "daystamp": "20090213",
+        "value": 5,
+        "comment": "Test datapoint",
+      }
+
+      var got = await goal.deleteDatapoint("1234")
+
+      expect(got).toEqual(expected)
+      expect(mockAxios.delete).toHaveBeenCalledTimes(1)
+      expect(mockAxios.delete).toHaveBeenCalledWith(
+        "https://www.beeminder.com/api/v1/users/test-user/goals/test-goal/datapoints/1234.json?auth_token=XXXXXXXX",
+      )
+    })
+
+    it("handles authentication error", async () => {
+      mockAxios.delete.mockImplementationOnce(() =>
+        Promise.reject({
+          response: {
+            status: 401,
+            data: { errors: "Not authorised" },
+          },
+        })
+      )
+
+      expect.assertions(3);
+      try {
+        await goal.deleteDatapoint("1234")
+      }
+      catch(err) {
+        expect(err.name).toEqual('AuthError')
+        expect(err.message).toEqual('Not authorised for: https://www.beeminder.com/api/v1/users/test-user/goals/test-goal/datapoints/1234.json: Not authorised')
+        expect(err.cause.response.status).toEqual(401)
+      }
+    })
+
+    it("doesn't swallow unknown errors", async () => {
+      mockAxios.delete.mockImplementationOnce(() =>
+        Promise.reject(Error('Something went wrong'))
+      )
+
+      expect.assertions(2);
+      try {
+        await goal.deleteDatapoint("1234")
+      }
+      catch(err) {
+        expect(err.name).toEqual('Error')
+        expect(err.message).toEqual('Failed to delete datapoint: https://www.beeminder.com/api/v1/users/test-user/goals/test-goal/datapoints/1234.json: Something went wrong')
       }
     })
   })

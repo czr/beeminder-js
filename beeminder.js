@@ -91,10 +91,27 @@ function goal(user, authToken, goal) {
     },
 
     deleteDatapoint: async (id) => {
-      let url = `${apiBase}/users/${user}/goals/${goal}/datapoints/${id}.json?auth_token=${authToken}`
-      return axios.delete(url)
-    },
+      let baseUrl = `${apiBase}/users/${user}/goals/${goal}/datapoints/${id}.json`
+      let authUrl = `${baseUrl}?auth_token=${authToken}`
 
+      try {
+        let response = await axios.delete(authUrl)
+        return response.data
+      }
+      catch (err) {
+        if (err.response && err.response.status === 401) {
+          throw new AuthError(
+            `Not authorised for: ${baseUrl}: ${err.response.data.errors}`,
+            err,
+          )
+        }
+        else {
+          const wrapper = new Error(`Failed to delete datapoint: ${baseUrl}: ${err.message}`)
+          wrapper.cause = err
+          throw wrapper
+        }
+      }
+    },
   }
 }
 
