@@ -4,7 +4,7 @@ const mockAxios = require('axios')
 const beeminder = require('./beeminder')
 
 describe('beeminder goal', () => {
-  var goal = beeminder.goal(
+  var goal = new beeminder.Goal(
     'test-user',
     'XXXXXXXX',
     'test-goal'

@@ -11,100 +11,104 @@ function AuthError (message, cause) {
   return this
 }
 
-function goal (user, authToken, goal) {
-  const apiBase = 'https://www.beeminder.com/api/v1'
+class Goal {
+  constructor (user, authToken, goal) {
+    this.apiBase = 'https://www.beeminder.com/api/v1'
 
-  return {
-    datapoints: async () => {
-      let baseUrl = `${apiBase}/users/${user}/goals/${goal}/datapoints.json`
-      let authUrl = `${baseUrl}?auth_token=${authToken}`
+    this.user = user
+    this.authToken = authToken
+    this.goal = goal
+  }
 
-      try {
-        let response = await axios.get(authUrl)
-        return response.data
-      } catch (err) {
-        if (err.response && err.response.status === 401) {
-          throw new AuthError(
-            `Not authorised for: ${baseUrl}: ${err.response.data.errors}`,
-            err,
-          )
-        } else {
-          const wrapper = new Error(`Failed to fetch datapoints: ${baseUrl}: ${err.message}`)
-          wrapper.cause = err
-          throw wrapper
-        }
-      }
-    },
+  async datapoints () {
+    let baseUrl = `${this.apiBase}/users/${this.user}/goals/${this.goal}/datapoints.json`
+    let authUrl = `${baseUrl}?auth_token=${this.authToken}`
 
-    createDatapoint: async (datapoint) => {
-      let url = `${apiBase}/users/${user}/goals/${goal}/datapoints.json`
-
-      try {
-        let response = await axios.post(
-          url,
-          qs.stringify({ ...datapoint, auth_token: authToken }),
-          { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } },
+    try {
+      let response = await axios.get(authUrl)
+      return response.data
+    } catch (err) {
+      if (err.response && err.response.status === 401) {
+        throw new AuthError(
+          `Not authorised for: ${baseUrl}: ${err.response.data.errors}`,
+          err,
         )
-        return response.data.id
-      } catch (err) {
-        if (err.response && err.response.status === 401) {
-          throw new AuthError(
-            `Not authorised for: ${url}: ${err.response.data.errors}`,
-            err,
-          )
-        } else {
-          const wrapper = new Error(`Failed to create datapoint on: ${url}: ${err.message}`)
-          wrapper.cause = err
-          throw wrapper
-        }
+      } else {
+        const wrapper = new Error(`Failed to fetch datapoints: ${baseUrl}: ${err.message}`)
+        wrapper.cause = err
+        throw wrapper
       }
-    },
+    }
+  }
 
-    updateDatapoint: async (datapoint) => {
-      let url = `${apiBase}/users/${user}/goals/${goal}/datapoints/${datapoint.id}.json`
+  async createDatapoint (datapoint) {
+    let url = `${this.apiBase}/users/${this.user}/goals/${this.goal}/datapoints.json`
 
-      try {
-        let response = await axios.put(
-          url,
-          qs.stringify({ ...datapoint, auth_token: authToken }),
-          { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } },
+    try {
+      let response = await axios.post(
+        url,
+        qs.stringify({ ...datapoint, auth_token: this.authToken }),
+        { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } },
+      )
+      return response.data.id
+    } catch (err) {
+      if (err.response && err.response.status === 401) {
+        throw new AuthError(
+          `Not authorised for: ${url}: ${err.response.data.errors}`,
+          err,
         )
-        return response.data
-      } catch (err) {
-        if (err.response && err.response.status === 401) {
-          throw new AuthError(
-            `Not authorised for: ${url}: ${err.response.data.errors}`,
-            err,
-          )
-        } else {
-          const wrapper = new Error(`Failed to update datapoint: ${url}: ${err.message}`)
-          wrapper.cause = err
-          throw wrapper
-        }
+      } else {
+        const wrapper = new Error(`Failed to create datapoint on: ${url}: ${err.message}`)
+        wrapper.cause = err
+        throw wrapper
       }
-    },
+    }
+  }
 
-    deleteDatapoint: async (id) => {
-      let baseUrl = `${apiBase}/users/${user}/goals/${goal}/datapoints/${id}.json`
-      let authUrl = `${baseUrl}?auth_token=${authToken}`
+  async updateDatapoint (datapoint) {
+    let url = `${this.apiBase}/users/${this.user}/goals/${this.goal}/datapoints/${datapoint.id}.json`
 
-      try {
-        let response = await axios.delete(authUrl)
-        return response.data
-      } catch (err) {
-        if (err.response && err.response.status === 401) {
-          throw new AuthError(
-            `Not authorised for: ${baseUrl}: ${err.response.data.errors}`,
-            err,
-          )
-        } else {
-          const wrapper = new Error(`Failed to delete datapoint: ${baseUrl}: ${err.message}`)
-          wrapper.cause = err
-          throw wrapper
-        }
+    try {
+      let response = await axios.put(
+        url,
+        qs.stringify({ ...datapoint, auth_token: this.authToken }),
+        { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } },
+      )
+      return response.data
+    } catch (err) {
+      if (err.response && err.response.status === 401) {
+        throw new AuthError(
+          `Not authorised for: ${url}: ${err.response.data.errors}`,
+          err,
+        )
+      } else {
+        const wrapper = new Error(`Failed to update datapoint: ${url}: ${err.message}`)
+        wrapper.cause = err
+        throw wrapper
       }
-    },
+    }
+  }
+
+  async deleteDatapoint (id) {
+    let baseUrl = `${this.apiBase}/users/${this.user}/goals/${this.goal}/datapoints/${id}.json`
+    let authUrl = `${baseUrl}?auth_token=${this.authToken}`
+
+    try {
+      let response = await axios.delete(authUrl)
+      return response.data
+    } catch (err) {
+      if (err.response && err.response.status === 401) {
+        throw new AuthError(
+          `Not authorised for: ${baseUrl}: ${err.response.data.errors}`,
+          err,
+        )
+      } else {
+        const wrapper = new Error(`Failed to delete datapoint: ${baseUrl}: ${err.message}`)
+        wrapper.cause = err
+        throw wrapper
+      }
+    }
   }
 }
 
-module.exports = { goal }
+module.exports = { Goal }
