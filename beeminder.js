@@ -3,7 +3,7 @@
 const axios = require('axios')
 const qs = require('qs')
 
-function AuthError(message, cause) {
+function AuthError (message, cause) {
   this.name = 'AuthError'
   this.message = message
   this.cause = cause
@@ -11,7 +11,7 @@ function AuthError(message, cause) {
   return this
 }
 
-function goal(user, authToken, goal) {
+function goal (user, authToken, goal) {
   const apiBase = 'https://www.beeminder.com/api/v1'
 
   return {
@@ -22,15 +22,13 @@ function goal(user, authToken, goal) {
       try {
         let response = await axios.get(authUrl)
         return response.data
-      }
-      catch (err) {
+      } catch (err) {
         if (err.response && err.response.status === 401) {
           throw new AuthError(
             `Not authorised for: ${baseUrl}: ${err.response.data.errors}`,
             err,
           )
-        }
-        else {
+        } else {
           const wrapper = new Error(`Failed to fetch datapoints: ${baseUrl}: ${err.message}`)
           wrapper.cause = err
           throw wrapper
@@ -48,15 +46,13 @@ function goal(user, authToken, goal) {
           { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } },
         )
         return response.data.id
-      }
-      catch (err) {
+      } catch (err) {
         if (err.response && err.response.status === 401) {
           throw new AuthError(
             `Not authorised for: ${url}: ${err.response.data.errors}`,
             err,
           )
-        }
-        else {
+        } else {
           const wrapper = new Error(`Failed to create datapoint on: ${url}: ${err.message}`)
           wrapper.cause = err
           throw wrapper
@@ -74,15 +70,13 @@ function goal(user, authToken, goal) {
           { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } },
         )
         return response.data
-      }
-      catch (err) {
+      } catch (err) {
         if (err.response && err.response.status === 401) {
           throw new AuthError(
             `Not authorised for: ${url}: ${err.response.data.errors}`,
             err,
           )
-        }
-        else {
+        } else {
           const wrapper = new Error(`Failed to update datapoint: ${url}: ${err.message}`)
           wrapper.cause = err
           throw wrapper
@@ -97,15 +91,13 @@ function goal(user, authToken, goal) {
       try {
         let response = await axios.delete(authUrl)
         return response.data
-      }
-      catch (err) {
+      } catch (err) {
         if (err.response && err.response.status === 401) {
           throw new AuthError(
             `Not authorised for: ${baseUrl}: ${err.response.data.errors}`,
             err,
           )
-        }
-        else {
+        } else {
           const wrapper = new Error(`Failed to delete datapoint: ${baseUrl}: ${err.message}`)
           wrapper.cause = err
           throw wrapper
@@ -115,4 +107,4 @@ function goal(user, authToken, goal) {
   }
 }
 
-module.exports = { goal };
+module.exports = { goal }
