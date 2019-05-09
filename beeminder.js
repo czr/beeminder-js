@@ -3,12 +3,14 @@
 const axios = require('axios')
 const qs = require('qs')
 
-function AuthError (message, cause) {
-  this.name = 'AuthError'
-  this.message = message
-  this.cause = cause
+class AuthError extends Error {
+  constructor (message, cause) {
+    super(message)
+    this.name = this.constructor.name
+    Error.captureStackTrace(this, this.constructor)
 
-  return this
+    this.cause = cause
+  }
 }
 
 class Goal {
