@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/czr/beeminder-js#readme",
   "dependencies": {
-    "axios": "^0.18.0",
+    "axios": "^0.18.1",
     "qs": "^6.6.0"
   },
   "devDependencies": {
